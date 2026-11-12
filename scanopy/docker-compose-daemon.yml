@@ -1,0 +1,31 @@
+services:
+  scanopy-daemon:
+    image: ghcr.io/scanopy/scanopy/daemon:v0.19.6
+    container_name: scanopy-daemon
+    network_mode: host
+    privileged: true
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 2G
+    environment:
+      SCANOPY_LOG_LEVEL: ${SCANOPY_LOG_LEVEL:-info}
+      SCANOPY_SERVER_URL: "${SCANOPY_SERVER_URL}"
+      SCANOPY_MODE: "daemon_poll"
+      SCANOPY_NAME: "raspberry-pi"
+      SCANOPY_DAEMON_API_KEY: "${SCANOPY_DAEMON_API_KEY}"
+      SCANOPY_BIND_ADDRESS: "0.0.0.0"
+      SCANOPY_PORT: "60073"
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:60073/api/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    volumes:
+      - daemon-config:/root/.config/scanopy/daemon
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+
+volumes:
+  daemon-config:
+
